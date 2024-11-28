@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-
 public class ImageAnimation : MonoBehaviour
 {
 	public enum ImageState
@@ -22,12 +21,25 @@ public class ImageAnimation : MonoBehaviour
 	private float delayBetweenAnimation;
 	public float AnimationSpeed = 5f;
 	public float delayBetweenLoop;
+	public bool startOnAwake =false;
+
+	private void OnValidate() {
+		rendererDelegate = GetComponent<Image>();
+
+		if (rendererDelegate == null)
+		{
+			Debug.LogError("No Image component found on this GameObject. Please add one.");
+		}
+	}
 
 	private void Awake()
 	{
 		if (Instance == null)
 		{
 			Instance = this;
+		}
+		if(startOnAwake){
+			StartAnimation();
 		}
     }
 

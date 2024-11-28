@@ -43,6 +43,7 @@ public class UIManager : MonoBehaviour
     [SerializeField] private GameObject PaytableMenuObject;
     [SerializeField] private Button Paytable_Button;
     [SerializeField] private Button PaytableClose_Button;
+    [SerializeField] private Button PaytableClose_Button2;
     [SerializeField] private Button PaytableLeft_Button;
     [SerializeField] private Button PaytableRight_Button;
     [SerializeField] private TMP_Text FreeSpin_Text;
@@ -132,6 +133,9 @@ public class UIManager : MonoBehaviour
 
         if (PaytableClose_Button) PaytableClose_Button.onClick.RemoveAllListeners();
         if (PaytableClose_Button) PaytableClose_Button.onClick.AddListener(delegate { ClosePopup(PaytableMenuObject); });
+
+        if (PaytableClose_Button2) PaytableClose_Button2.onClick.RemoveAllListeners();
+        if (PaytableClose_Button2) PaytableClose_Button2.onClick.AddListener(delegate { ClosePopup(PaytableMenuObject); });
 
         if (Menu_Button) Menu_Button.onClick.RemoveAllListeners();
         if (Menu_Button) Menu_Button.onClick.AddListener(delegate
@@ -254,7 +258,7 @@ public class UIManager : MonoBehaviour
         {
             isSound = true;
             audioController.ToggleMute(!state, "sound");
-            DOTween.To(() => SoundToggle_RT.anchoredPosition, (val) => SoundToggle_RT.anchoredPosition = val, new Vector2(SoundToggle_RT.anchoredPosition.x + 95, SoundToggle_RT.anchoredPosition.y), 0.1f).OnUpdate(() =>
+            DOTween.To(() => SoundToggle_RT.anchoredPosition, (val) => SoundToggle_RT.anchoredPosition = val, new Vector2(SoundToggle_RT.anchoredPosition.x + 108, SoundToggle_RT.anchoredPosition.y), 0.1f).OnUpdate(() =>
             {
                 LayoutRebuilder.ForceRebuildLayoutImmediate(Info_BttnTransform);
             });
@@ -263,7 +267,7 @@ public class UIManager : MonoBehaviour
         {
             isSound = false;
             audioController.ToggleMute(!state, "sound");
-            DOTween.To(() => SoundToggle_RT.anchoredPosition, (val) => SoundToggle_RT.anchoredPosition = val, new Vector2(SoundToggle_RT.anchoredPosition.x - 95, SoundToggle_RT.anchoredPosition.y), 0.1f).OnUpdate(() =>
+            DOTween.To(() => SoundToggle_RT.anchoredPosition, (val) => SoundToggle_RT.anchoredPosition = val, new Vector2(SoundToggle_RT.anchoredPosition.x - 108, SoundToggle_RT.anchoredPosition.y), 0.1f).OnUpdate(() =>
             {
                 LayoutRebuilder.ForceRebuildLayoutImmediate(Info_BttnTransform);
             });
@@ -276,7 +280,7 @@ public class UIManager : MonoBehaviour
         {
             isMusic = true;
             audioController.ToggleMute(!state, "music");
-            DOTween.To(() => MusicToggle_RT.anchoredPosition, (val) => MusicToggle_RT.anchoredPosition = val, new Vector2(MusicToggle_RT.anchoredPosition.x + 95, MusicToggle_RT.anchoredPosition.y), 0.1f).OnUpdate(() =>
+            DOTween.To(() => MusicToggle_RT.anchoredPosition, (val) => MusicToggle_RT.anchoredPosition = val, new Vector2(MusicToggle_RT.anchoredPosition.x + 108, MusicToggle_RT.anchoredPosition.y), 0.1f).OnUpdate(() =>
             {
                 LayoutRebuilder.ForceRebuildLayoutImmediate(Info_BttnTransform);
             });
@@ -285,7 +289,7 @@ public class UIManager : MonoBehaviour
         {
             isMusic = false;
             audioController.ToggleMute(!state, "music");
-            DOTween.To(() => MusicToggle_RT.anchoredPosition, (val) => MusicToggle_RT.anchoredPosition = val, new Vector2(MusicToggle_RT.anchoredPosition.x - 95, MusicToggle_RT.anchoredPosition.y), 0.1f).OnUpdate(() =>
+            DOTween.To(() => MusicToggle_RT.anchoredPosition, (val) => MusicToggle_RT.anchoredPosition = val, new Vector2(MusicToggle_RT.anchoredPosition.x - 108, MusicToggle_RT.anchoredPosition.y), 0.1f).OnUpdate(() =>
             {
                 LayoutRebuilder.ForceRebuildLayoutImmediate(Info_BttnTransform);
             });
