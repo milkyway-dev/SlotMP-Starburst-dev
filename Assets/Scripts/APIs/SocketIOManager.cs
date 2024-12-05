@@ -28,18 +28,13 @@ public class SocketIOManager : MonoBehaviour
     private SocketManager manager;
 
     protected string SocketURI = null;
-    protected string TestSocketURI = "https://game-crm-rtp-backend.onrender.com/";
-    //protected string TestSocketURI = "https://6f01c04j-5000.inc1.devtunnels.ms/";
-    //protected string TestSocketURI = "https://7p68wzhv-5000.inc1.devtunnels.ms/"; //vikings
-    //protected string TestSocketURI = "https://916smq0d-5001.inc1.devtunnels.ms/";
-    //protected string TestSocketURI = "https://jmn3wfcb-5000.inc1.devtunnels.ms/";
-
-
+    // protected string TestSocketURI = "https://game-crm-rtp-backend.onrender.com/";
+    protected string TestSocketURI = "http://localhost:5001/";
     [SerializeField]
     private string testToken;
 
-    protected string gameID = "SL-CLEO";
-    //protected string gameID = "";
+    // protected string gameID = "SL-CLEO";
+    protected string gameID = "";
 
     internal bool isLoaded = false;
 
@@ -262,11 +257,11 @@ public class SocketIOManager : MonoBehaviour
                     initUIData = myData.message.UIData;
                     playerdata = myData.message.PlayerData;
                     bonusdata = myData.message.BonusData;
-                    LineData = myData.message.GameData.Lines;
+                    LineData = myData.message.GameData.linesApiData;
                     if (!SetInit)
                     {
                         //Debug.Log(jsonObject);
-                        List<string> LinesString = ConvertListListIntToListString(initialData.Lines);
+                        List<string> LinesString = ConvertListListIntToListString(initialData.linesApiData);
                         List<string> InitialReels = ConvertListOfListsToStrings(initialData.Reel);
                         InitialReels = RemoveQuotes(InitialReels);
                         PopulateSlotSocket(InitialReels, LinesString);
@@ -443,6 +438,7 @@ public class GameData
 {
     public List<List<string>> Reel { get; set; }
     public List<List<int>> Lines { get; set; }
+    public List<List<int>> linesApiData { get; set; }
     public List<double> Bets { get; set; }
     public bool canSwitchLines { get; set; }
     public List<int> LinesCount { get; set; }

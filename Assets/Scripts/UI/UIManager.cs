@@ -413,7 +413,7 @@ public class UIManager : MonoBehaviour
     internal void InitialiseUIData(string SupportUrl, string AbtImgUrl, string TermsUrl, string PrivacyUrl, Paylines symbolsText)
     {
         StartCoroutine(DownloadImage(AbtImgUrl));
-        PopulateSymbolsPayout(symbolsText);
+        // PopulateSymbolsPayout(symbolsText); commented for testing, needs to be changed according to backend data
     }
 
     private void PopulateSymbolsPayout(Paylines paylines)
