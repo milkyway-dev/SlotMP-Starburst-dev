@@ -2,41 +2,30 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using DG.Tweening;
+using TMPro;
 
 public class ManageLineButtons : MonoBehaviour, IPointerEnterHandler,IPointerExitHandler, IPointerUpHandler,IPointerDownHandler
 {
-
-	[SerializeField] private PayoutCalculation payManager;
-	[SerializeField] private int num;
-	private bool isEnabled = false;
+	[SerializeField] private SlotBehaviour slotManager;
+	[SerializeField] private TMP_Text num_text;
 
 	public void OnPointerEnter(PointerEventData eventData)
 	{
-		if (num <= 20)
-		{
-			isEnabled = true;
-		}
-		else
-		{
-			isEnabled = false;
-		}
-		if (isEnabled)
-			payManager.GeneratePayoutLinesBackend(num - 1);
+		slotManager.GenerateStaticLine(num_text);
 	}
 
 	public void OnPointerExit(PointerEventData eventData)
 	{
-		if (isEnabled)
-			payManager.ResetStaticLine();
+		slotManager.DestroyStaticLine();
 	}
 
 	public void OnPointerDown(PointerEventData eventData)
 	{
 		if (Application.platform == RuntimePlatform.WebGLPlayer && Application.isMobilePlatform)
 		{
-			//Debug.Log("run on pointer down");
 			this.gameObject.GetComponent<Button>().Select();
-			payManager.GeneratePayoutLinesBackend(num - 1);
+			//Debug.Log("run on pointer down");
+			slotManager.GenerateStaticLine(num_text);
 		}
 	}
 
@@ -45,12 +34,12 @@ public class ManageLineButtons : MonoBehaviour, IPointerEnterHandler,IPointerExi
 		if (Application.platform == RuntimePlatform.WebGLPlayer && Application.isMobilePlatform)
 		{
 			//Debug.Log("run on pointer up");
-			payManager.ResetStaticLine();
+			slotManager.DestroyStaticLine();
 			DOVirtual.DelayedCall(0.1f, () =>
 			{
 				this.gameObject.GetComponent<Button>().spriteState = default;
 				EventSystem.current.SetSelectedGameObject(null);
-			});
+			 });
 		}
 	}
 }
