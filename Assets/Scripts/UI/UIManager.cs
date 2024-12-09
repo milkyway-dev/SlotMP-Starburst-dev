@@ -80,6 +80,7 @@ public class UIManager : MonoBehaviour
     private bool isExit = false;
     private bool isMenu = false;
 
+    [SerializeField] private Image targetImage; // Assign the Image in the Inspector
 
     private void Start()
     {
@@ -371,15 +372,6 @@ public class UIManager : MonoBehaviour
         StartPopupAnim();
     }
 
-    //private void Update()
-    //{
-    //    if (Input.GetKeyDown(KeyCode.Space))
-    //    {
-    //        PopulateWin(4);
-    //        Debug.Log("Called");
-    //    }
-    //}
-
     private void StartPopupAnim()
     {
         if (WinPopup_Object) WinPopup_Object.SetActive(true);
@@ -403,6 +395,19 @@ public class UIManager : MonoBehaviour
 
             slotManager.CheckPopups = false;
         });
+    }
+    private void CycleColors()
+    {
+        // Tween through the hue range
+        DOTween.To(() => 0f, x =>
+        {
+            // Convert the hue to a color and apply it
+            Color newColor = Color.HSVToRGB(x, 1f, 1f);
+            newColor.a = 0.4f;
+            targetImage.color = newColor;
+        }, 1f, 5f)
+        .SetEase(Ease.Linear) // Smooth transition
+        .SetLoops(-1, LoopType.Restart); // Infinite loop
     }
 
     internal void ADfunction()

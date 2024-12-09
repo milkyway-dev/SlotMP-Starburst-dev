@@ -303,7 +303,7 @@ public class SocketIOManager : MonoBehaviour
 
     private void PopulateSlotSocket(List<string> slotPop, List<string> LineIds)
     {
-        slotManager.shuffleInitialMatrix();
+        slotManager.ShuffleInitialMatrix();
         for (int i = 0; i < LineIds.Count; i++)
         {
             slotManager.FetchLines(LineIds[i], i);
