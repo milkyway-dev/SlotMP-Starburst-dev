@@ -5,6 +5,7 @@ using DG.Tweening;
 using UnityEngine.UI;
 using TMPro;
 using UnityEngine.Networking;
+using Unity.VisualScripting;
 
 public class UIManager : MonoBehaviour
 {
@@ -69,6 +70,9 @@ public class UIManager : MonoBehaviour
     [Header("Paytable Slot Text")]
     [SerializeField] private List<TMP_Text> SymbolsText = new();
 
+    [SerializeField] private Image comboAnimationImage;
+    [SerializeField] private ImageAnimation bigWinStartAnimation;
+
     [SerializeField] private AudioController audioController;
 
     [SerializeField] private SlotBehaviour slotManager;
@@ -79,8 +83,12 @@ public class UIManager : MonoBehaviour
     private bool isSound = true;
     private bool isExit = false;
     private bool isMenu = false;
+    internal bool isComboSpritesAnimating;
+
 
     [SerializeField] private Image targetImage; // Assign the Image in the Inspector
+
+    private Tween ColorCycleTween;
 
     private void Start()
     {
@@ -350,56 +358,44 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    internal void PopulateWin(int value)
+    internal void StartWinAnimation(Sprite winSprite, Sprite[] animationSprites)
     {
-        switch (value)
-        {
-            case 1:
-                if (Win_Image) Win_Image.sprite = BigWin_Sprite;
-                break;
-            case 2:
-                if (Win_Image) Win_Image.sprite = HugeWin_Sprite;
-                break;
-            case 3:
-                if (Win_Image) Win_Image.sprite = MegaWin_Sprite;
-                break;
-            case 4:
-                if (Win_Image) Win_Image.sprite = Jackpot_Sprite;
-                JackpotImageAnimation.StartAnimation();
-                break;
+        ImageAnimation winImageAnimation = Win_Image.GetComponent<ImageAnimation>();
+        if(winImageAnimation.currentAnimationState==ImageAnimation.ImageState.PLAYING){
+            Win_Image.rectTransform.DOScale(0, 0.2f);
         }
-
-        StartPopupAnim();
-    }
-
-    private void StartPopupAnim()
-    {
-        if (WinPopup_Object) WinPopup_Object.SetActive(true);
-        if (MainPopup_Object) MainPopup_Object.SetActive(true);
-
-        audioController.PlayWLAudio("bigwin");
-
-        Win_Image.rectTransform.DOScale(new Vector3(1, 1, 1), .5f).SetEase(Ease.OutCirc);
-
-        ImageRotationTween = WinBgAnimation.DORotate(new Vector3(0, 0, 360), 2f, RotateMode.FastBeyond360)
-            .SetEase(Ease.Linear) // Make the rotation constant
-            .SetLoops(-1, LoopType.Incremental); // Rotate infinitely in an incremental way
-
-        WinBgAnimation.DOScale(Vector3.one, .6f).SetEase(Ease.OutCirc);
-
-        DOVirtual.DelayedCall(3f, () =>
-        {
-            Win_Image.rectTransform.DOScale(Vector3.zero, .5f).SetEase(Ease.InBack).OnComplete(() => ClosePopup(WinPopup_Object));
-
-            WinBgAnimation.DOScale(Vector3.zero, .5f).SetEase(Ease.InBack).OnComplete(()=> ImageRotationTween.Kill());
-
-            slotManager.CheckPopups = false;
+        DOVirtual.DelayedCall(0.5f, ()=>{
+            Win_Image.sprite = winSprite;
+            winImageAnimation.textureArray.Clear();
+            winImageAnimation.textureArray.AddRange(animationSprites);
+            winImageAnimation.doLoopAnimation = true;
+            winImageAnimation.StartAnimation();
+            Win_Image.rectTransform.DOScale(1, 0.2f);
         });
     }
+
+    internal void StopWinAnimation(){
+        targetImage.DOFade(0, 0.5f).OnComplete(()=> {ColorCycleTween.Kill();});
+        ImageAnimation winImageAnimation = Win_Image.GetComponent<ImageAnimation>();
+        Win_Image.rectTransform.DOScale(0, 0.5f).OnComplete(()=> {winImageAnimation.StopAnimation();});
+    }
+
+    internal IEnumerator BigWinStartAnim(){
+        bigWinStartAnimation.rendererDelegate.DOFade(1, 0.2f);
+        bigWinStartAnimation.StartAnimation();
+        yield return new WaitUntil(()=> bigWinStartAnimation.textureArray[^10]==bigWinStartAnimation.rendererDelegate.sprite);
+        CycleColors();
+        yield return new WaitUntil(()=> bigWinStartAnimation.textureArray[^5]==bigWinStartAnimation.rendererDelegate.sprite);
+        bigWinStartAnimation.rendererDelegate.DOFade(0, 0.2f);
+        yield return new WaitUntil(()=> bigWinStartAnimation.textureArray[^1]==bigWinStartAnimation.rendererDelegate.sprite);
+        bigWinStartAnimation.StopAnimation();
+    }
+
     private void CycleColors()
     {
+        targetImage.DOFade(1, 0.5f);
         // Tween through the hue range
-        DOTween.To(() => 0f, x =>
+        ColorCycleTween = DOTween.To(() => 0f, x =>
         {
             // Convert the hue to a color and apply it
             Color newColor = Color.HSVToRGB(x, 1f, 1f);
@@ -418,7 +414,7 @@ public class UIManager : MonoBehaviour
     internal void InitialiseUIData(string SupportUrl, string AbtImgUrl, string TermsUrl, string PrivacyUrl, Paylines symbolsText)
     {
         StartCoroutine(DownloadImage(AbtImgUrl));
-        // PopulateSymbolsPayout(symbolsText); commented for testing, needs to be changed according to backend data
+        PopulateSymbolsPayout(symbolsText);
     }
 
     private void PopulateSymbolsPayout(Paylines paylines)
@@ -428,34 +424,39 @@ public class UIManager : MonoBehaviour
             string text = null;
             if (paylines.symbols[i].Multiplier[0][0] != 0)
             {
-                text += "5x - " + paylines.symbols[i].Multiplier[0][0];
+                text += paylines.symbols[i].Multiplier[0][0].ToString();
             }
             if (paylines.symbols[i].Multiplier[1][0] != 0)
             {
-                text += "\n4x - " + paylines.symbols[i].Multiplier[1][0];
+                text += "\n" + paylines.symbols[i].Multiplier[1][0].ToString();
             }
             if (paylines.symbols[i].Multiplier[2][0] != 0)
             {
-                text += "\n3x - " + paylines.symbols[i].Multiplier[2][0];
+                text += "\n" + paylines.symbols[i].Multiplier[2][0].ToString();
             }
             if (SymbolsText[i]) SymbolsText[i].text = text;
         }
+    }
+    internal IEnumerator AnimateSprite(Sprite sprite)
+    {
+        isComboSpritesAnimating = true;
+        comboAnimationImage.sprite = sprite;
 
-        for (int i = 0; i < paylines.symbols.Count; i++)
-        {
-            if (paylines.symbols[i].Name.ToUpper() == "FREESPIN")
-            {
-                if (FreeSpin_Text) FreeSpin_Text.text = paylines.symbols[i].description.ToString();
-            }            
-            if (paylines.symbols[i].Name.ToUpper() == "JACKPOT")
-            {
-                if (Jackpot_Text) Jackpot_Text.text = paylines.symbols[i].description.ToString();
-            }
-            if (paylines.symbols[i].Name.ToUpper() == "WILD")
-            {
-                if (Wild_Text) Wild_Text.text = paylines.symbols[i].description.ToString();
-            }
-        }
+        float randomZRotation = UnityEngine.Random.Range(-15f, 15f);
+        comboAnimationImage.rectTransform.localEulerAngles = new Vector3(0, 0, randomZRotation);
+
+        // Scale up quickly.
+        comboAnimationImage.rectTransform.localScale = Vector3.zero;
+        comboAnimationImage.color = new(1, 1, 1, 1);
+        comboAnimationImage.rectTransform.DOScale(Vector3.one, 0.2f).SetEase(Ease.OutBack);
+
+        // Wait for half a second.
+        yield return new WaitForSeconds(0.5f);
+
+        // Fade out the image.
+        comboAnimationImage.DOFade(0, 0.3f).WaitForCompletion();
+        yield return comboAnimationImage.rectTransform.DOScale(Vector3.one*1.5f, 0.3f).WaitForCompletion();
+        isComboSpritesAnimating = false;
     }
 
     private void CallOnExitFunction()
