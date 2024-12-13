@@ -5,8 +5,6 @@ using DG.Tweening;
 using UnityEngine.UI;
 using TMPro;
 using UnityEngine.Networking;
-using Unity.VisualScripting;
-
 public class UIManager : MonoBehaviour
 {
     [Header("Popus UI")]
@@ -14,12 +12,6 @@ public class UIManager : MonoBehaviour
 
     [Header("Win Popup")]
     [SerializeField] private Image Win_Image;
-    [SerializeField] private GameObject WinPopup_Object;
-    [SerializeField] private TMP_Text Win_Text;
-    [SerializeField] private RectTransform WinBgAnimation;
-    [SerializeField] private Sprite BigWin_Sprite, HugeWin_Sprite, MegaWin_Sprite, Jackpot_Sprite;
-    [SerializeField] private ImageAnimation JackpotImageAnimation;
-    private Tween ImageRotationTween;
 
     [Header("Disconnection Popup")]
     [SerializeField] private Button CloseDisconnect_Button;
@@ -47,9 +39,6 @@ public class UIManager : MonoBehaviour
     [SerializeField] private Button PaytableClose_Button2;
     [SerializeField] private Button PaytableLeft_Button;
     [SerializeField] private Button PaytableRight_Button;
-    [SerializeField] private TMP_Text FreeSpin_Text;
-    [SerializeField] private TMP_Text Jackpot_Text;
-    [SerializeField] private TMP_Text Wild_Text;
     [SerializeField] private List<GameObject> GameRulesPages = new();
     private int PageIndex;
 
@@ -60,41 +49,28 @@ public class UIManager : MonoBehaviour
     [SerializeField] private GameObject QuitMenuObject;
 
     [Header("Menu Objects")]
-    [SerializeField] private Button Menu_Button;
-    [SerializeField] private Button Info_Button;
     [SerializeField] private Button Settings_Button;
-    [SerializeField] private Button RaycastLayerButton;
-    [SerializeField] private RectTransform Info_BttnTransform;
-    [SerializeField] private RectTransform Settings_BttnTransform;
 
     [Header("Paytable Slot Text")]
     [SerializeField] private List<TMP_Text> SymbolsText = new();
 
+    [Header("Misc Objects")]
     [SerializeField] private Image comboAnimationImage;
     [SerializeField] private ImageAnimation bigWinStartAnimation;
+    [SerializeField] private Image targetImage; // Assign the Image in the Inspector
 
+    [Header("Managers")]
     [SerializeField] private AudioController audioController;
-
     [SerializeField] private SlotBehaviour slotManager;
-
-    [SerializeField] private SocketIOManager socketManager;
-
     private bool isMusic = true;
     private bool isSound = true;
     private bool isExit = false;
-    private bool isMenu = false;
-    internal bool isComboSpritesAnimating;
-
-
-    [SerializeField] private Image targetImage; // Assign the Image in the Inspector
-
+    internal bool BigWinAnimating;
     private Tween ColorCycleTween;
+    internal bool isComboSpritesAnimating;
 
     private void Start()
     {
-        if (RaycastLayerButton) RaycastLayerButton.onClick.RemoveAllListeners();
-        if (RaycastLayerButton) RaycastLayerButton.onClick.AddListener(() => CanCloseMenu());
-
         if (LBExit_Button) LBExit_Button.onClick.RemoveAllListeners();
         if (LBExit_Button) LBExit_Button.onClick.AddListener(delegate { ClosePopup(LBPopup_Object); });
 
@@ -146,19 +122,6 @@ public class UIManager : MonoBehaviour
         if (PaytableClose_Button2) PaytableClose_Button2.onClick.RemoveAllListeners();
         if (PaytableClose_Button2) PaytableClose_Button2.onClick.AddListener(delegate { ClosePopup(PaytableMenuObject); });
 
-        if (Menu_Button) Menu_Button.onClick.RemoveAllListeners();
-        if (Menu_Button) Menu_Button.onClick.AddListener(delegate
-        {
-            if (!isMenu)
-            {
-                OpenCloseMenu(true);
-            }
-            else
-            {
-                OpenCloseMenu(false);
-            }
-        });
-
         if (Settings_Button) Settings_Button.onClick.RemoveAllListeners();
         if (Settings_Button) Settings_Button.onClick.AddListener(OpenSettingsPanel);
 
@@ -170,14 +133,6 @@ public class UIManager : MonoBehaviour
 
         if (PaytableRight_Button) PaytableRight_Button.onClick.RemoveAllListeners();
         if (PaytableRight_Button) PaytableRight_Button.onClick.AddListener(()=> ChangePage(true));
-    }
-
-    internal void CanCloseMenu()
-    {
-        if (isMenu)
-        {
-            OpenCloseMenu(false);
-        }
     }
 
     private void ChangePage(bool IncDec)
@@ -221,65 +176,19 @@ public class UIManager : MonoBehaviour
         if (GameRulesPages[PageIndex]) GameRulesPages[PageIndex].SetActive(true);
     }
 
-    private void OpenCloseMenu(bool toggle)
-    {
-        if(audioController) audioController.PlayButtonAudio();
-        if (toggle)
-        {
-            isMenu = true;
-            if (Info_Button) Info_Button.gameObject.SetActive(true);
-            if (Settings_Button) Settings_Button.gameObject.SetActive(true);
-
-            DOTween.To(() => Info_BttnTransform.anchoredPosition, (val) => Info_BttnTransform.anchoredPosition = val, new Vector2(Info_BttnTransform.anchoredPosition.x - 125, Info_BttnTransform.anchoredPosition.y), 0.1f).OnUpdate(() =>
-            {
-                LayoutRebuilder.ForceRebuildLayoutImmediate(Info_BttnTransform);
-            });
-
-            DOTween.To(() => Settings_BttnTransform.anchoredPosition, (val) => Settings_BttnTransform.anchoredPosition = val, new Vector2(Settings_BttnTransform.anchoredPosition.x - 250, Settings_BttnTransform.anchoredPosition.y), 0.1f).OnUpdate(() =>
-            {
-                LayoutRebuilder.ForceRebuildLayoutImmediate(Settings_BttnTransform);
-            });
-        }
-        else
-        {
-            isMenu = false;
-            DOTween.To(() => Info_BttnTransform.anchoredPosition, (val) => Info_BttnTransform.anchoredPosition = val, new Vector2(Info_BttnTransform.anchoredPosition.x + 125, Info_BttnTransform.anchoredPosition.y), 0.1f).OnUpdate(() =>
-            {
-                LayoutRebuilder.ForceRebuildLayoutImmediate(Info_BttnTransform);
-            });
-
-            DOTween.To(() => Settings_BttnTransform.anchoredPosition, (val) => Settings_BttnTransform.anchoredPosition = val, new Vector2(Settings_BttnTransform.anchoredPosition.x + 250, Settings_BttnTransform.anchoredPosition.y), 0.1f).OnUpdate(() =>
-            {
-                LayoutRebuilder.ForceRebuildLayoutImmediate(Settings_BttnTransform);
-            });
-
-            DOVirtual.DelayedCall(0.1f, () =>
-            {
-                if (Info_Button) Info_Button.gameObject.SetActive(false);
-                if (Settings_Button) Settings_Button.gameObject.SetActive(false);
-            });
-        }
-    }
-
     private void SoundOnOFF(bool state)
     {
         if (state)
         {
             isSound = true;
             audioController.ToggleMute(!state, "sound");
-            DOTween.To(() => SoundToggle_RT.anchoredPosition, (val) => SoundToggle_RT.anchoredPosition = val, new Vector2(SoundToggle_RT.anchoredPosition.x + 108, SoundToggle_RT.anchoredPosition.y), 0.1f).OnUpdate(() =>
-            {
-                LayoutRebuilder.ForceRebuildLayoutImmediate(Info_BttnTransform);
-            });
+            DOTween.To(() => SoundToggle_RT.anchoredPosition, (val) => SoundToggle_RT.anchoredPosition = val, new Vector2(SoundToggle_RT.anchoredPosition.x + 108, SoundToggle_RT.anchoredPosition.y), 0.1f);
         }
         else
         {
             isSound = false;
             audioController.ToggleMute(!state, "sound");
-            DOTween.To(() => SoundToggle_RT.anchoredPosition, (val) => SoundToggle_RT.anchoredPosition = val, new Vector2(SoundToggle_RT.anchoredPosition.x - 108, SoundToggle_RT.anchoredPosition.y), 0.1f).OnUpdate(() =>
-            {
-                LayoutRebuilder.ForceRebuildLayoutImmediate(Info_BttnTransform);
-            });
+            DOTween.To(() => SoundToggle_RT.anchoredPosition, (val) => SoundToggle_RT.anchoredPosition = val, new Vector2(SoundToggle_RT.anchoredPosition.x - 108, SoundToggle_RT.anchoredPosition.y), 0.1f);
         }
     }
 
@@ -289,19 +198,13 @@ public class UIManager : MonoBehaviour
         {
             isMusic = true;
             audioController.ToggleMute(!state, "music");
-            DOTween.To(() => MusicToggle_RT.anchoredPosition, (val) => MusicToggle_RT.anchoredPosition = val, new Vector2(MusicToggle_RT.anchoredPosition.x + 108, MusicToggle_RT.anchoredPosition.y), 0.1f).OnUpdate(() =>
-            {
-                LayoutRebuilder.ForceRebuildLayoutImmediate(Info_BttnTransform);
-            });
+            DOTween.To(() => MusicToggle_RT.anchoredPosition, (val) => MusicToggle_RT.anchoredPosition = val, new Vector2(MusicToggle_RT.anchoredPosition.x + 108, MusicToggle_RT.anchoredPosition.y), 0.1f);
         }
         else
         {
             isMusic = false;
             audioController.ToggleMute(!state, "music");
-            DOTween.To(() => MusicToggle_RT.anchoredPosition, (val) => MusicToggle_RT.anchoredPosition = val, new Vector2(MusicToggle_RT.anchoredPosition.x - 108, MusicToggle_RT.anchoredPosition.y), 0.1f).OnUpdate(() =>
-            {
-                LayoutRebuilder.ForceRebuildLayoutImmediate(Info_BttnTransform);
-            });
+            DOTween.To(() => MusicToggle_RT.anchoredPosition, (val) => MusicToggle_RT.anchoredPosition = val, new Vector2(MusicToggle_RT.anchoredPosition.x - 108, MusicToggle_RT.anchoredPosition.y), 0.1f);
         }
     }
 
@@ -310,7 +213,6 @@ public class UIManager : MonoBehaviour
         if (audioController) audioController.PlayButtonAudio();
         if (MainPopup_Object) MainPopup_Object.SetActive(true);
         if (Settings_Object) Settings_Object.SetActive(true);
-        CanCloseMenu();
     }
 
     private void OpenQuitPanel()
@@ -318,7 +220,6 @@ public class UIManager : MonoBehaviour
         if (audioController) audioController.PlayButtonAudio();
         if (MainPopup_Object) MainPopup_Object.SetActive(true);
         if (QuitMenuObject) QuitMenuObject.SetActive(true);
-        CanCloseMenu();
     }
 
     private void OpenPaytablePanel()
@@ -339,13 +240,10 @@ public class UIManager : MonoBehaviour
         if(PaytableRight_Button) PaytableRight_Button.interactable = true;
 
         if (PaytableMenuObject) PaytableMenuObject.SetActive(true);
-
-        CanCloseMenu();
     }
 
     internal void LowBalPopup()
     {
-        CanCloseMenu();
         OpenPopup(LBPopup_Object);
     }
 
@@ -353,25 +251,22 @@ public class UIManager : MonoBehaviour
     {
         if (!isExit)
         {
-            CanCloseMenu();
             OpenPopup(DisconnectPopup_Object);
         }
     }
 
-    internal void StartWinAnimation(Sprite winSprite, Sprite[] animationSprites)
+    internal IEnumerator StartWinAnimation(Sprite winSprite, Sprite[] animationSprites)
     {
         ImageAnimation winImageAnimation = Win_Image.GetComponent<ImageAnimation>();
-        if(winImageAnimation.currentAnimationState==ImageAnimation.ImageState.PLAYING){
-            Win_Image.rectTransform.DOScale(0, 0.2f);
-        }
-        DOVirtual.DelayedCall(0.5f, ()=>{
-            Win_Image.sprite = winSprite;
-            winImageAnimation.textureArray.Clear();
-            winImageAnimation.textureArray.AddRange(animationSprites);
-            winImageAnimation.doLoopAnimation = true;
-            winImageAnimation.StartAnimation();
-            Win_Image.rectTransform.DOScale(1, 0.2f);
-        });
+        Win_Image.sprite = winSprite;
+        winImageAnimation.textureArray.Clear();
+        winImageAnimation.textureArray.AddRange(animationSprites);
+        winImageAnimation.doLoopAnimation = true;
+        winImageAnimation.StartAnimation();
+        Win_Image.rectTransform.DOScale(1, 0.2f);
+        yield return new WaitForSeconds(4f);
+        StopWinAnimation();
+        BigWinAnimating=false;
     }
 
     internal void StopWinAnimation(){
@@ -424,15 +319,15 @@ public class UIManager : MonoBehaviour
             string text = null;
             if (paylines.symbols[i].Multiplier[0][0] != 0)
             {
-                text += paylines.symbols[i].Multiplier[0][0].ToString();
+                text += paylines.symbols[i].Multiplier[0][0].ToString()+"x";
             }
             if (paylines.symbols[i].Multiplier[1][0] != 0)
             {
-                text += "\n" + paylines.symbols[i].Multiplier[1][0].ToString();
+                text += "\n" + paylines.symbols[i].Multiplier[1][0].ToString()+"x";
             }
             if (paylines.symbols[i].Multiplier[2][0] != 0)
             {
-                text += "\n" + paylines.symbols[i].Multiplier[2][0].ToString();
+                text += "\n" + paylines.symbols[i].Multiplier[2][0].ToString()+"x";
             }
             if (SymbolsText[i]) SymbolsText[i].text = text;
         }

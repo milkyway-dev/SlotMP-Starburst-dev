@@ -278,6 +278,11 @@ public class SocketIOManager : MonoBehaviour
                     //Debug.Log(jsonObject);
                     myData.message.GameData.FinalResultReel = ConvertListOfListsToStrings(myData.message.GameData.ResultSymbols);
                     myData.message.GameData.FinalsymbolsToEmit = TransformAndRemoveRecurring(myData.message.GameData.symbolsToEmit);
+                    if(myData.message.GameData.isStarBurst){
+                        foreach(StarBurstResponse s in myData.message.GameData.starBurstResponse){
+                            s.FinalSymbolsToEmit = TransformAndRemoveRecurring(s.symbolsToEmit);
+                        }
+                    }
                     resultData = myData.message.GameData;
                     playerdata = myData.message.PlayerData;
                     isResultdone = true;
@@ -451,12 +456,24 @@ public class GameData
     public List<int> linesToEmit { get; set; }
     public List<List<string>> symbolsToEmit { get; set; }
     public double WinAmout { get; set; }
+    public bool isStarBurst { get; set; }
+    public List<int> starBurstReel { get; set; }
+    public List<StarBurstResponse> starBurstResponse { get; set; }
     public FreeSpins freeSpins { get; set; }
     public List<string> FinalsymbolsToEmit { get; set; }
     public List<string> FinalResultReel { get; set; }
     public double jackpot { get; set; }
     public bool isBonus { get; set; }
     public double BonusStopIndex { get; set; }
+}
+
+public class StarBurstResponse
+{
+    public List<List<int>> resultMatrix { get; set; }
+    public List<List<string>> symbolsToEmit { get; set; }
+    public List<string> FinalSymbolsToEmit { get; set; }
+    public List<int> linesToEmit { get; set; }
+    public double payout { get; set; }
 }
 
 [Serializable]
