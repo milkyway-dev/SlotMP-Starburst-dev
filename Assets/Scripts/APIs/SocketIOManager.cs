@@ -10,12 +10,8 @@ using System.Runtime.Serialization;
 
 public class SocketIOManager : MonoBehaviour
 {
-    [SerializeField]
-    private SlotBehaviour slotManager;
-
-    [SerializeField]
-    private UIManager uiManager;
-
+    [SerializeField] private SlotBehaviour slotManager;
+    [SerializeField] private UIManager uiManager;
     internal GameData initialData = null;
     internal UIData initUIData = null;
     internal GameData resultData = null;
@@ -23,19 +19,14 @@ public class SocketIOManager : MonoBehaviour
     [SerializeField] internal List<string> bonusdata = null;
     internal bool isResultdone = false;
     internal List<List<int>> LineData = null;
-
-
     private SocketManager manager;
-
     protected string SocketURI = null;
     // protected string TestSocketURI = "https://game-crm-rtp-backend.onrender.com/";
     protected string TestSocketURI = "http://localhost:5001/";
     [SerializeField]
     private string testToken;
-
-    // protected string gameID = "SL-CLEO";
-    protected string gameID = "";
-
+    protected string gameID = "SL-SB";
+    // protected string gameID = "";
     internal bool isLoaded = false;
 
     internal bool SetInit = false;
@@ -48,7 +39,6 @@ public class SocketIOManager : MonoBehaviour
         //Debug.unityLogger.logEnabled = false;
         isLoaded = false;
         SetInit = false;
-
     }
 
     private void Start()
@@ -66,7 +56,6 @@ public class SocketIOManager : MonoBehaviour
         // Proceed with connecting to the server using myAuth and socketURL
         SocketURI = data.socketURL;
         myAuth = data.cookie;
-
     }
 
     string myAuth = null;
@@ -107,7 +96,6 @@ public class SocketIOManager : MonoBehaviour
         SetupSocketManager(options);
 #endif
     }
-
 
     private IEnumerator WaitForAuthToken(SocketOptions options)
     {
