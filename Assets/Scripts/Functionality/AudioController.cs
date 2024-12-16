@@ -7,9 +7,6 @@ public class AudioController : MonoBehaviour
     [SerializeField] internal AudioSource audioPlayer_button;
     [SerializeField] internal AudioSource audioSpin_button;
     [SerializeField] private AudioClip[] clips;
-    [SerializeField] private AudioClip[] Bonusclips;
-    [SerializeField] private AudioSource bg_audioBonus;
-    [SerializeField] private AudioSource audioPlayer_Bonus;
 
     private void Start()
     {
@@ -41,19 +38,19 @@ public class AudioController : MonoBehaviour
         }
     }
 
-    internal void SwitchBGSound(bool isbonus)
-    {
-        if(isbonus)
-        {
-            if (bg_audioBonus) bg_audioBonus.enabled = true;
-            if (bg_adudio) bg_adudio.enabled = false;
-        }
-        else
-        {
-            if (bg_audioBonus) bg_audioBonus.enabled = false;
-            if (bg_adudio) bg_adudio.enabled = true;
-        }
-    }
+    // internal void SwitchBGSound(bool isbonus)
+    // {
+    //     if(isbonus)
+    //     {
+    //         if (bg_audioBonus) bg_audioBonus.enabled = true;
+    //         if (bg_adudio) bg_adudio.enabled = false;
+    //     }
+    //     else
+    //     {
+    //         if (bg_audioBonus) bg_audioBonus.enabled = false;
+    //         if (bg_adudio) bg_adudio.enabled = true;
+    //     }
+    // }
 
     internal void PlayWLAudio(string type)
     {
@@ -67,13 +64,13 @@ public class AudioController : MonoBehaviour
             case "win":
                 index = 1;
                 break;
-            case "lose":
+            case "spinStop":
                 index = 2;
                 break;
-            case "spinStop":
+            case "megaWin":
                 index = 3;
                 break;
-            case "megaWin":
+            case "Star":
                 index = 4;
                 break;
         }
@@ -104,13 +101,13 @@ public class AudioController : MonoBehaviour
         {
             case "music":
                 bg_adudio.mute = toggle;
-                bg_audioBonus.mute = toggle;
+                // bg_audioBonus.mute = toggle;
                 break;
             case "sound":
                 audioPlayer_button.mute = toggle;
                 audioPlayer_wl.mute = toggle;
                 audioSpin_button.mute = toggle;
-                audioPlayer_Bonus.mute = toggle;
+                // audioPlayer_Bonus.mute = toggle;
                 break;
         }
     }

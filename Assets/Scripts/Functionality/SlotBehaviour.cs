@@ -75,7 +75,6 @@ public class SlotBehaviour : MonoBehaviour
     private Coroutine FreeSpinRoutine = null;
     private Coroutine tweenroutine;
     private bool IsAutoSpin = false;
-    private bool IsFreeSpin = false;
     private bool IsSpinning = false;
     private bool CheckSpinAudio = false;
     private int BetCounter = 0;
@@ -203,18 +202,12 @@ public class SlotBehaviour : MonoBehaviour
     #region FreeSpin
     internal void FreeSpin(int spins)
     {
-        if (!IsFreeSpin)
+        if (FreeSpinRoutine != null)
         {
-            IsFreeSpin = true;
-            ToggleButtonGrp(false);
-
-            if (FreeSpinRoutine != null)
-            {
-                StopCoroutine(FreeSpinRoutine);
-                FreeSpinRoutine = null;
-            }
-            FreeSpinRoutine = StartCoroutine(FreeSpinCoroutine(spins));
+            StopCoroutine(FreeSpinRoutine);
+            FreeSpinRoutine = null;
         }
+        FreeSpinRoutine = StartCoroutine(FreeSpinCoroutine(spins));
     }
 
     private IEnumerator FreeSpinCoroutine(int spinchances)
@@ -232,7 +225,6 @@ public class SlotBehaviour : MonoBehaviour
         isStarBurst=false;
         freeSpinIndex=0;
         ToggleButtonGrp(true);
-        IsFreeSpin = false;
     }
     #endregion
 
@@ -349,7 +341,7 @@ public class SlotBehaviour : MonoBehaviour
     {
         while (true)
         {
-            if (!IsSpinning && !IsAutoSpin && !IsFreeSpin && !isBaseAnimationRunning)
+            if (!IsSpinning && !IsAutoSpin && !isStarBurst && !isBaseAnimationRunning)
             {
                 if (BaseImageAnimation == null)
                 {
@@ -364,7 +356,7 @@ public class SlotBehaviour : MonoBehaviour
                     }
                 }
             }
-            else if(IsSpinning && IsAutoSpin && IsFreeSpin && isBaseAnimationRunning && BaseImageAnimation!=null){
+            else if(IsSpinning && IsAutoSpin && isStarBurst && isBaseAnimationRunning && BaseImageAnimation!=null){
                 StopBaseAnimation();
             }
 
@@ -492,7 +484,7 @@ public class SlotBehaviour : MonoBehaviour
     //manage the Routine for spinning of the slots
     private IEnumerator TweenRoutine(bool bonus = false)
     {
-        if (currentBalance < currentTotalBet && !IsFreeSpin) // Check if balance is sufficient to place the bet
+        if (currentBalance < currentTotalBet && !isStarBurst) // Check if balance is sufficient to place the bet
         {
             CompareBalance();
             StopAutoSpin();
@@ -540,11 +532,16 @@ public class SlotBehaviour : MonoBehaviour
                     AutoSpin_Button.interactable = false;
                 }
             }
-            isStarBurst=true;    
+            if(!isStarBurst){
+                isStarBurst=true;
+                freeSpinIndex=0;    
+            }
             starBurstResponse=SocketManager.resultData.starBurstResponse[freeSpinIndex];
         }
         else{
-            isStarBurst=false;    
+            isStarBurst=false;
+            freeSpinIndex=0;
+            StarBurstColumns.Clear();  
         }
         yield return new WaitForSeconds(1f);
 
@@ -576,11 +573,6 @@ public class SlotBehaviour : MonoBehaviour
         }
         yield return PaylinesCoroutine;
 
-        if(SocketManager.playerdata.currentWining <= 0)
-        {
-            audioController.PlayWLAudio("lose");
-        }
-
         if(isStarBurst && freeSpinIndex==0){
             IsSpinning=false;
             yield return new WaitForSeconds(2f);
@@ -588,7 +580,7 @@ public class SlotBehaviour : MonoBehaviour
             yield break;
         }
 
-        if (!IsAutoSpin && !IsFreeSpin)
+        if (!IsAutoSpin && !isStarBurst)
         {
             ToggleButtonGrp(true);
             IsSpinning = false;
@@ -743,7 +735,6 @@ public class SlotBehaviour : MonoBehaviour
         if (LineId.Count > 0 || points_AnimString.Count > 0)
         {
             if(!isStarBurst){
-                if (audioController) audioController.PlayWLAudio("win");
                 bool allIdsAreSame = true;
                 string firstId = Tempimages[2].slotImages[0].GetComponent<ImageAnimation>().id;
 
@@ -764,8 +755,7 @@ public class SlotBehaviour : MonoBehaviour
                 }
             }
             if(isStarBurst && StarBurstColumns.Count<4){
-                // if (audioController) audioController.PlayWLAudio("");
-                Debug.Log("Here");
+                // Debug.Log("Here");
                 List<int> currentAnimationColumns=new();
                 for(int i=1;i<Tempimages.Count-1;i++){
                     for(int j=0;j<Tempimages[i].slotImages.Count;j++){
@@ -781,6 +771,7 @@ public class SlotBehaviour : MonoBehaviour
                     }
                 }
                 foreach(int i in currentAnimationColumns){
+                    audioController.PlayWLAudio("Star");
                     RainbowAnimations[i].StartAnimation();
                     RainbowAnimations[i].rendererDelegate.DOFade(1, 1f);
                     for(int j=0;j<Tempimages[i].slotImages.Count;j++){
@@ -845,6 +836,9 @@ public class SlotBehaviour : MonoBehaviour
                 else{
                     TriggerHugeWinAnimation(SocketManager.playerdata.currentWining);
                 }
+            }
+            else{
+                audioController.PlayWLAudio("win");
             }
 
             for (int i = 0; i < transforms.Count; i++)
@@ -914,14 +908,17 @@ public class SlotBehaviour : MonoBehaviour
     private void TriggerHugeWinAnimation(double amount){
         if (amount >= currentTotalBet * 5 && amount < currentTotalBet * 10)
         {
+            audioController.PlayWLAudio("megaWin");
             StartCoroutine(uiManager.StartWinAnimation(BigWin_Sprite, BigWinAnimationSprites));
         }
         else if (amount >= currentTotalBet * 10 && amount < currentTotalBet * 15)
         {
+            audioController.PlayWLAudio("bigwin");
             StartCoroutine(uiManager.StartWinAnimation(HugeWin_Sprite, HugeWinAnimationSprites));
         }
         else if (amount >= currentTotalBet * 15)
         {
+            audioController.PlayWLAudio("bigwin");
             StartCoroutine(uiManager.StartWinAnimation(MegaWin_Sprite, MegaWinAnimationSprites));
         }
     }
