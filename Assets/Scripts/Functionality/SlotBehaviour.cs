@@ -104,7 +104,7 @@ public class SlotBehaviour : MonoBehaviour
         if(Turbo_Button) Turbo_Button.onClick.AddListener(TurboToggle);
 
         if(StopSpin_Button) StopSpin_Button.onClick.RemoveAllListeners();
-        if(StopSpin_Button) StopSpin_Button.onClick.AddListener(()=> {StopSpinToggle=true; StopSpin_Button.gameObject.SetActive(false);});
+        if(StopSpin_Button) StopSpin_Button.onClick.AddListener(()=> {audioController.PlayButtonAudio(); StopSpinToggle=true; StopSpin_Button.gameObject.SetActive(false);});
 
         if (SlotStart_Button) SlotStart_Button.onClick.RemoveAllListeners();
         if (SlotStart_Button) SlotStart_Button.onClick.AddListener(delegate
@@ -155,6 +155,7 @@ public class SlotBehaviour : MonoBehaviour
     }
 
     void TurboToggle(){
+        audioController.PlayButtonAudio();
         if(IsTurboOn){
             IsTurboOn=false;
             Turbo_Button.GetComponent<ImageAnimation>().StopAnimation();
@@ -525,13 +526,13 @@ public class SlotBehaviour : MonoBehaviour
         CheckSpinAudio = true;
         IsSpinning = true;
         ToggleButtonGrp(false);
-        // if(!IsTurboOn && !isStarBurst && !IsAutoSpin){
-        //     StopSpin_Button.gameObject.SetActive(true);
-        // }
+        if(!isStarBurst && !IsTurboOn && !IsAutoSpin){
+                StopSpin_Button.gameObject.SetActive(true);
+            }
         for (int i = 0; i < numberOfSlots; i++) // Initialize tweening for slot animations
         {
             if(!isStarBurst){
-                InitializeTweening(Slot_Transform[i], i, true);
+                InitializeTweening(Slot_Transform[i], i);
             }
             else{
                 if(StarBurstColumns.Contains(i)){
@@ -587,7 +588,7 @@ public class SlotBehaviour : MonoBehaviour
             yield return new WaitForSeconds(0.1f);
         }
         else{
-            for(int i=0;i<10;i++)
+            for(int i=0;i<5;i++)
             {
                 yield return new WaitForSeconds(0.1f);
                 if(StopSpinToggle){
@@ -1017,6 +1018,7 @@ public class SlotBehaviour : MonoBehaviour
         if (TotalBetMinus_Button) TotalBetMinus_Button.interactable = toggle;
         if (LineBetPlus_Button) LineBetPlus_Button.interactable = toggle;
         if (TotalBetPlus_Button) TotalBetPlus_Button.interactable = toggle;
+        if (MaxBet_Button) MaxBet_Button.interactable = toggle;
     }
 
     private void StartGameAnimation(Transform animObjects)
@@ -1091,7 +1093,7 @@ public class SlotBehaviour : MonoBehaviour
     }
 
     #region TweeningCode
-    private void InitializeTweening(Transform slotTransform, int index, bool baseSpin = false)
+    private void InitializeTweening(Transform slotTransform, int index)
     {
         Tweener tweener = null;
         slotTransform.DOLocalMoveY(-3221f, .4f)
@@ -1103,9 +1105,6 @@ public class SlotBehaviour : MonoBehaviour
             .SetLoops(-1, LoopType.Restart)
             .SetEase(Ease.Linear);
             alltweens.Add(index, tweener);
-            if(baseSpin && index==4 && !IsTurboOn && !IsAutoSpin){
-                StopSpin_Button.gameObject.SetActive(true);
-            }
         });
     }
 
